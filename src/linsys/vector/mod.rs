@@ -1,6 +1,17 @@
+//! Vector Module
+//! 
+//! This module implements a wrapper around the std::vec::Vect object that creates an
+//! easy interface to compute standard vector operations. This includes basic addition,
+//! multiplication, and subtraction, in addition to creating a zero vector and multiplying
+//! by a scalar.
+
 use std::ops::{Add, Mul, Sub, Div};
 use std::num::Zero;
 
+/// Vector struct
+/// 
+/// A struct that creates vectors of arbitrary types. Composed of a dimension and a vector
+/// of the values.
 #[derive(Debug,PartialEq)]
 pub struct Vector<T> {
 	vals: Vec<T>,
@@ -8,11 +19,14 @@ pub struct Vector<T> {
 }
 
 impl<T> Vector<T> {
+
+	/// Creates a new Vector<T> given a Vec<T>
 	pub fn new(data: Vec<T>) -> Vector<T> {
 		let dimension = data.len();
 		Vector { vals: data, dim: dimension }
 	}
 
+	/// Gets a reference to the value at position index
 	pub fn get(&self, index: usize) -> &T {
 		if index >= self.dim {
 			panic!("The index given is too high! The vector is not that larger!");
@@ -21,25 +35,30 @@ impl<T> Vector<T> {
 		&self.vals[index]
 	}
 
+	/// Sets the value at position index to a new value
 	pub fn set(&mut self, value: T, index: usize) {
 		&self.vals.remove(index);
 		&self.vals.insert(index, value);
 	}
 
+	/// Returns the dimension of the Vector
 	pub fn dim(&self) -> usize {
 		self.dim
 	}
 
+	/// Returns a reference to the Vec<T> stored inside the Vector
 	pub fn data(&self) -> &Vec<T> {
 		&self.vals
 	}
 
+	/// Returns a mutable reference to the Vec<T> stored inside the Vector
 	pub fn mut_data(&mut self) -> &Vec<T> {
 		&mut self.vals
 	}
 }
 
 impl<T: Zero> Vector<T> {
+	/// Creates a Vector full of zero elements of a given size
 	pub fn zero(size: usize) -> Vector<T> {
 		if size < 1 {
 			panic!("The size of the vector must be a positive integer!");
@@ -54,14 +73,15 @@ impl<T: Zero> Vector<T> {
 	}
 }
 
-impl<T: Copy + Zero + Mul<T, Output = T> + Add<T, Output = T>> Vector<T> {
+impl<T: Copy + Mul<T, Output = T> + Add<T, Output = T>> Vector<T> {
+	/// Calculates the dot product of two Vectors
 	pub fn dot(&self, v: &Vector<T>) -> T {
 		if self.dim() != v.dim() {
 			panic!("Vectors need to be of the same dimension to dot together!");
 		}
 
-		let mut sum: T = T::zero();
-		for i in 0..self.dim {
+		let mut sum: T = self.vals[0] * v.vals[0];
+		for i in 1..self.dim {
 			sum = sum + self.vals[i] * v.vals[i];
 		}
 
@@ -70,6 +90,7 @@ impl<T: Copy + Zero + Mul<T, Output = T> + Add<T, Output = T>> Vector<T> {
 }
 
 impl <T: Clone + Add<T, Output = T>> Vector<T> {
+	/// Adds two Vectors together
 	pub fn add(&self, v: &Vector<T>) -> Vector<T> {
 		if self.dim() != v.dim() {
 			panic!("Vectors need to be of the same dimension to add!");
@@ -85,6 +106,7 @@ impl <T: Clone + Add<T, Output = T>> Vector<T> {
 }
 
 impl <T: Clone + Sub<T, Output = T>> Vector<T> {
+	/// Subtracts one Vector from the other
 	pub fn sub(&self, v: &Vector<T>) -> Vector<T> {
 		if self.dim() != v.dim() {
 			panic!("Vectors need to be of the same dimension to subtract!");
@@ -100,6 +122,7 @@ impl <T: Clone + Sub<T, Output = T>> Vector<T> {
 }
 
 impl <T: Clone + Mul<T, Output = T>> Vector<T> {
+	/// Multiplies the elements of one Vector by the corresponding elements of the second
 	pub fn mul(&self, v: &Vector<T>) -> Vector<T> {
 		if self.dim() != v.dim() {
 			panic!("Vectors need to be of the same dimension to multiply!");
@@ -115,6 +138,7 @@ impl <T: Clone + Mul<T, Output = T>> Vector<T> {
 }
 
 impl <T: Clone + Mul<T, Output = T>> Vector<T> {
+	/// Multiplies each element of the Vector by a scalar
 	pub fn scalar_mul(&self, v: T) -> Vector<T> {
 		if self.dim() < 1 {
 			panic!("Vector needs to be of dimension at least one to scalar multiply!");
@@ -130,6 +154,7 @@ impl <T: Clone + Mul<T, Output = T>> Vector<T> {
 }
 
 impl<T: Clone> Clone for Vector<T> {
+	/// Creates a copy of the Vector
 	fn clone(&self) -> Vector<T> {
 		Vector { dim: self.dim, vals: self.vals.clone() }
 	}
