@@ -3,6 +3,7 @@
 
 pub mod linsys {
 	pub mod vector;
+	pub mod matrix;
 }
 
 #[cfg(test)]

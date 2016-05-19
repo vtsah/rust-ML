@@ -59,7 +59,7 @@ impl<T> Vector<T> {
 
 impl<T: Zero> Vector<T> {
 	/// Creates a Vector full of zero elements of a given size
-	pub fn zero(size: usize) -> Vector<T> {
+	pub fn zeroes(size: usize) -> Vector<T> {
 		if size < 1 {
 			panic!("The size of the vector must be a positive integer!");
 		}
@@ -172,7 +172,7 @@ mod test {
 
 	#[test]
 	fn check_zero() {
-		let vec: Vector<i32> = Vector::zero(3);
+		let vec: Vector<i32> = Vector::zeroes(3);
 		let zero = Vector::new(vec![0, 0, 0]);
 
 		assert_eq!(vec, zero);
@@ -219,7 +219,7 @@ mod test {
 		let vec3 = Vector::new(vec![1,  4, 3]);
 		let vec4 = Vector::new(vec![7, -1, 6]);
 
-		assert_eq!(vec1.sub(&vec2), Vector::zero(3));
+		assert_eq!(vec1.sub(&vec2), Vector::zeroes(3));
 		assert_eq!(vec1.sub(&vec3), vec4);
 	}
 
@@ -238,10 +238,10 @@ mod test {
 		let vec1 = Vector::new(vec![ 8, 3, 9]);
 		let vec2 = Vector::new(vec![ 3, 2, 1]);
 		let vec3 = Vector::new(vec![24, 6, 9]);
-		let vec4 = Vector::zero(3);
+		let vec4 = Vector::zeroes(3);
 
 		assert_eq!(vec1.mul(&vec2), vec3);
-		assert_eq!(vec1.mul(&vec4), Vector::zero(3));
+		assert_eq!(vec1.mul(&vec4), Vector::zeroes(3));
 	}
 
 	#[test]
@@ -258,7 +258,7 @@ mod test {
 	fn check_scalar_mul() {
 		let vec1 = Vector::new(vec![ 8, 3,  9]);
 		let vec2 = Vector::new(vec![16, 6, 18]);
-		let vec3 = Vector::zero(3);
+		let vec3 = Vector::zeroes(3);
 
 		assert_eq!(vec1.scalar_mul(2), vec2);
 		assert_eq!(vec1.scalar_mul(0), vec3);
