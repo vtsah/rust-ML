@@ -103,6 +103,18 @@ impl <T: Clone + Add<T, Output = T>> Vector<T> {
 
 		out
 	}
+
+	/// Adds two Vectors together in place
+	pub fn add_in_place(&mut self, v: &Vector<T>) {
+		if self.dim() != v.dim() {
+			panic!("Vectors need to be of the same dimension to add!");
+		}
+
+		for i in 0..self.dim {
+			let to_set = self.vals[i].clone() + v.vals[i].clone();
+			self.set(to_set, i);
+		}
+	}
 }
 
 impl <T: Clone + Sub<T, Output = T>> Vector<T> {

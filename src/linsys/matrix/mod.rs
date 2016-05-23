@@ -1,6 +1,7 @@
 use std::ops::{Add, Mul, Sub, Div};
 use std::num::{Zero, One};
 use linsys::vector::Vector;
+use std::vec::Vec;
 
 
 #[derive(Debug,PartialEq)]
@@ -19,6 +20,10 @@ impl<T> Matrix<T> {
 		Matrix { vals: data, rows: r, cols: c }
 	}
 
+	pub fn empty() -> Matrix<T> {
+		Matrix { vals: Vec::new(), rows: 0, cols: 0 }
+	}
+
 	pub fn get(&self, r: usize, c: usize) -> &T {
 		if r > self.rows - 1 {
 			panic!("You've exceeded the number of rows in the matrix!");
@@ -28,6 +33,14 @@ impl<T> Matrix<T> {
 		}
 
 		let index = r * (self.cols) + c;
+		&self.vals[index]
+	}
+
+	pub fn get_index(&self, index: usize) -> &T {
+		if index > (self.rows * self.cols - 1) {
+			panic!("You've exceeded the number of entries in the matrix!");
+		}
+
 		&self.vals[index]
 	}
 
@@ -301,9 +314,7 @@ impl <T: Clone + Zero> Matrix<T> {
 
 		Matrix::zeroes(2,2)
 	}
-}
 
-impl <T: Clone + Zero> Matrix<T> {
 	fn matrix_cut(&self, r: usize, c: usize) -> Matrix<T> {
 		if r > self.rows - 1 {
 			panic!("The matrix does not have that many rows!");
@@ -329,6 +340,39 @@ impl <T: Clone + Zero> Matrix<T> {
 		}
 
 		Matrix::new(new_data, self.rows - 1, self.cols - 1)
+	}
+}
+
+impl<T: Clone> Matrix<T> {
+	pub fn from_vector(data: Vector<T>) -> Matrix<T> {
+		let mut vec = Vec::new();
+		for i in 0..data.dim() {
+			vec.push(data.get(i).clone());
+		}
+		
+		Matrix::new(vec, data.dim(), 1)
+	}
+
+	pub fn append_vector(&mut self, vector: Vector<T>) {
+		for i in 0..vector.dim() {
+			self.vals.insert((i + 1) * self.cols + i, vector.get(i).clone());
+		}
+	}
+
+	pub fn append_column(&mut self, column: usize, mat: &Matrix<T>) {
+		for i in 0..mat.rows() {
+			self.vals.insert((i + 1) * self.cols + i, mat.get(i, column).clone());
+		}
+	}
+
+	pub fn col_to_vector(&self, column: usize) -> Vector<T> {
+		let mut out = Vec::new();
+		for i in 0..self.rows {
+			out.push(self.get_index(i * self.cols + column).clone());
+		}
+
+		let fin: Vec<T> = out;
+		Vector::new(fin)
 	}
 }
 
