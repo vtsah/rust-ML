@@ -2,11 +2,13 @@ use linsys::matrix::Matrix;
 use linsys::vector::Vector;
 use rand::{thread_rng, sample};
 use std::vec::Vec;
+use std::string::String;
 
 pub struct KMeans {
 	k: usize,
 	iterations: usize,
 	means: Matrix<f64>,
+	classes: Vec<String>,
 }
 
 fn distance(vec1: Vector<f64>, vec2: Vector<f64>) -> f64 {
@@ -20,6 +22,7 @@ fn distance(vec1: Vector<f64>, vec2: Vector<f64>) -> f64 {
 
 fn centroid(columns: Vec<usize>, training: &Matrix<f64>) -> Vector<f64> {
 	let mut center: Vector<f64> = Vector::zeroes(training.rows());
+
 	for i in 0..columns.len() {
 		center.add_in_place(&training.col_to_vector(columns[i]));
 	}
@@ -33,7 +36,7 @@ impl KMeans {
 			panic!("k must be at least two!");
 		}
 
-		KMeans { k: k, iterations: iter, means: Matrix::empty(), }
+		KMeans { k: k, iterations: iter, means: Matrix::empty(), classes: Vec::new() }
 	}
 
 	pub fn k(&self) -> usize {
@@ -46,6 +49,10 @@ impl KMeans {
 
 	pub fn means(&self) -> &Matrix<f64> {
 		&self.means
+	}
+
+	pub fn set_classes(&mut self, class_list: Vec<String>) {
+		self.classes = class_list;
 	}
 
 	pub fn train(&mut self, training: &Matrix<f64>) {
@@ -61,7 +68,7 @@ impl KMeans {
 		let mut means = Matrix::from_vector(training.col_to_vector(cols[0]));
 
 		for i in 1..self.k {
-			means.append_column(cols[i], training)
+			means.append_column(cols[i], training);
 		}
 
 		self.means = means;
@@ -98,5 +105,42 @@ impl KMeans {
 		}
 
 		closest_mean
+	}
+
+	pub fn test(&self, testing: &Matrix<f64>) -> Vec<usize> {
+		let mut result: Vec<usize> = Vec::new();
+		for i in 0..testing.cols() {
+			result.push(self.nearest_mean(testing.col_to_vector(i)));
+		}
+
+		result
+	}
+
+	pub fn test_string_classes(&self, testing: &Matrix<f64>) ->Vec<String> {
+		let mut result: Vec<String> = Vec::new();
+		for i in 0..testing.cols() {
+			let mean = self.nearest_mean(testing.col_to_vector(i));
+			result.push(self.get_class(mean).clone());
+		}
+
+		result
+	}
+
+	fn nearest_mean(&self, point: Vector<f64>) -> usize {
+		let mut min_distance = distance(self.means.col_to_vector(0), point.clone());
+		let mut closest_mean = 0;
+		for current_mean in 1..self.means.cols() {
+			let new_distance: f64 = distance(self.means.col_to_vector(current_mean), point.clone());
+			if new_distance < min_distance {
+				min_distance = new_distance;
+				closest_mean = current_mean;
+			}
+		}
+
+		closest_mean
+	}
+
+	pub fn get_class(&self, mean: usize) -> String {
+		self.classes[mean].clone()
 	}
 }

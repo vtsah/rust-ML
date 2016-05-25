@@ -567,7 +567,7 @@ mod test {
 									 4,  7, -7,
 									-2,  4,  3], 3, 3);
 
-		assert_eq!(mat1.matrix_cut(8, 5), mat2);
+		assert_eq!(mat1.matrix_cut(8, 5), mat2); // each should panic
 		assert_eq!(mat2.matrix_cut(0, 9), mat3);
 		assert_eq!(mat3.matrix_cut(3, 3), mat4);
 	}
