@@ -10,7 +10,13 @@ pub mod linsys {
 
 pub mod ml {
 	pub mod k_means;
+	pub mod knn;
+	pub mod linear_ls;
 }
+
+// pub mod trees {
+// 	pub mod kd_tree;
+// }
 
 // #[cfg(test)]
 // mod tests {

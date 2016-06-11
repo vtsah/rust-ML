@@ -219,7 +219,74 @@ impl <T: Clone + Zero + One + Add<T, Output = T> + Sub<T, Output = T> + Mul<T, O
 	// }
 }
 
-impl <T: Clone + Sub<T, Output = T>> Matrix<T> {
+impl<T: Clone + Zero + One + Add<T, Output = T> + Sub<T, Output = T> + Mul<T, Output = T> + Div<T, Output = T> + PartialEq> Matrix<T> {
+	/// Will use the block multiplication method to invert a matrix:
+	/// | A B |^-1         |    (A - BD^-1C)^-1     -A^-1B(D - CA^-1B)^-1 |
+	/// | C D |    becomes | -D^-1C(A - BD^-1C)^-1     (D - CA^-1B)^-1    |
+	///
+	/// | A B |^-1         |    (A - BD^-1C)^-1     -(A - BD^-1C)^-1BD^-1 |
+	/// | C D |    becomes | -(D - CA^-1B)^-1CA^-1     (D - CA^-1B)^-1    |
+	///
+	/// So, we need to calculate five different inverses:
+	/// A, C, D, A - BD^-1C, and D - CA^-1B
+	/// And then it's just regular multiplication, addition, and subtraction
+	pub fn inv(&self) -> Matrix<T> {
+		if self.rows != self.cols {
+			panic!("It isn't possible to invert a non-square matrix");
+		}
+
+		if self.rows == 1 {
+			if *self.get(0, 0) == T::zero() {
+				panic!("Singular matrix! Cannot compute the inverse!");
+			}
+			let mut vec: Vec<T> = Vec::with_capacity(1);
+			vec.push(T::one() / self.get(0, 0).clone());
+
+			return Matrix::new(vec, 1, 1);
+		}
+
+		if self.rows == 2 {
+			if self.get(0, 0).clone() * self.get(1, 1).clone() == self.get(0, 1).clone() * self.get(1, 0).clone() {
+				panic!("Singular matrix! Cannot compute the inverse!");
+			}
+
+			let mut vec: Vec<T> = Vec::with_capacity(4);
+			let a = self.get_index(0).clone();
+			let b = self.get_index(0).clone();
+			let c = self.get_index(0).clone();
+			let d = self.get_index(0).clone();
+
+			vec.push(d.clone() / (a.clone() * d.clone() - b.clone() * c.clone()));
+			vec.push(T::zero() - b.clone() / (a.clone() * d.clone() - b.clone() * c.clone()));
+			vec.push(T::zero() - c.clone() / (a.clone() * d.clone() - b.clone() * c.clone()));
+			vec.push(a.clone() / (a.clone() * d.clone() - b.clone() * c.clone()));
+
+			return Matrix::new(vec, 2, 2);
+		}
+
+		let less_half: usize = self.rows / 2;
+
+		let mat_a: Matrix<T> = self.section(0, 0, less_half, less_half);
+		let mat_b: Matrix<T> = self.section(0, less_half + 1, less_half, self.cols);
+		let mat_c: Matrix<T> = self.section(less_half + 1, 0, self.rows, less_half);
+		let mat_d: Matrix<T> = self.section(less_half + 1, less_half + 1, self.rows, self.cols);
+
+		let inv_a: Matrix<T> = mat_a.inv();
+		let inv_d: Matrix<T> = mat_d.inv();
+		let inv_long_a: Matrix<T> = mat_a.sub(&mat_b.mat_mul(&inv_d).mat_mul(&mat_c)).inv();
+		let inv_long_d: Matrix<T> = mat_d.sub(&mat_c.mat_mul(&inv_a).mat_mul(&mat_b)).inv();
+
+		let top_right: Matrix<T> = Matrix::zeroes(less_half, self.cols - less_half).sub(&inv_a.mat_mul(&mat_b).mat_mul(&inv_long_d));
+		let bottom_left: Matrix<T> = Matrix::zeroes(self.cols - less_half, less_half).sub(&inv_d.mat_mul(&mat_c).mat_mul(&inv_long_a));
+
+		let top: Matrix<T> = inv_long_a.augment(&top_right);
+		let bottom: Matrix<T> = bottom_left.augment(&inv_long_d);
+
+		top.augment_below(&bottom)
+	}
+}
+
+impl<T: Clone + Sub<T, Output = T>> Matrix<T> {
 	pub fn sub(&self, v: &Matrix<T>) -> Matrix<T> {
 		if self.rows() != v.rows() {
 			panic!("Matrices need to have the same number of rows to add!");
@@ -305,14 +372,52 @@ impl <T: Clone + Mul<T, Output = T>> Matrix<T> {
 }
 
 impl <T: Clone + Zero> Matrix<T> {
-	pub fn invert(&self) -> Matrix<T> {
-		if self.rows != self.cols {
-			panic!("It isn't possible to invert a non-square matrix");
+	pub fn transpose(&self) -> Matrix<T> {
+		let mut vec: Vec<T> = Vec::with_capacity(self.rows * self.cols);
+		// let mut out: Matrix<T> = Matrix::zeroes(self.cols, self.rows);
+
+		for i in 0..self.cols {
+			for j in 0..self.rows {
+				vec.push(self.get(j, i).clone());
+			}
 		}
 
-		// let mut out: Matrix<T> = self.clone();
+		Matrix::new(vec, self.cols, self.rows)
+	}
 
-		Matrix::zeroes(2,2)
+	pub fn section(&self, row_start: usize, col_start: usize, row_end: usize, col_end: usize) -> Matrix<T> {
+		let mut out: Matrix<T> = Matrix::zeroes(row_end - row_start, col_end - col_start);
+
+		for i in 0..out.rows() {
+			for j in 0..out.cols() {
+				out.set(self.get(row_start + i, col_start + j).clone(), i, j);
+			}
+		}
+
+		out
+	}
+
+	pub fn augment(&self, left_mat: &Matrix<T>) -> Matrix<T> {
+		let mut out: Matrix<T> = self.clone();
+
+		for i in 0..left_mat.rows() {
+			for j in 0..left_mat.cols() {
+				out.vals.insert((i + 1) * self.cols() + j, left_mat.get(i, j).clone());
+			}
+		}
+
+		out
+	}
+
+	fn augment_below(&self, beneath_mat: &Matrix<T>) -> Matrix<T> {
+		let mut out: Matrix<T> = self.clone();
+
+		let num: usize = beneath_mat.rows() * beneath_mat.cols();
+		for i in 0..num {
+			out.vals.push(beneath_mat.get_index(i).clone());
+		}
+
+		out
 	}
 
 	fn matrix_cut(&self, r: usize, c: usize) -> Matrix<T> {
