@@ -6,6 +6,7 @@ extern crate rand;
 pub mod linsys {
 	pub mod vector;
 	pub mod matrix;
+	pub mod dim;
 }
 
 pub mod ml {
