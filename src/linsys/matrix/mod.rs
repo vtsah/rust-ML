@@ -1,5 +1,6 @@
 use std::ops::{Add, Mul, Sub, Div};
-use std::num::{Zero, One};
+//use std::num::{Zero, One};
+use numbers::{Zero, One};
 use linsys::vector::Vector;
 use std::vec::Vec;
 
@@ -164,33 +165,33 @@ impl <T: Clone + Zero + One + Add<T, Output = T> + Sub<T, Output = T> + Mul<T, O
 		sum
 	}
 
-	pub fn row_elimination(&self) -> Matrix<T> {
-		let mut out: Matrix<T> = self.clone();
-		let mut min_dim = self.rows;
-		if self.rows > self.cols {
-			min_dim = self.cols;
-		}
+	// pub fn row_elimination(&self) -> Matrix<T> {
+	// 	let mut out: Matrix<T> = self.clone();
+	// 	let mut min_dim = self.rows;
+	// 	if self.rows > self.cols {
+	// 		min_dim = self.cols;
+	// 	}
 
-		for i in 0..min_dim {
-			let index = Matrix::argmax(&self.vals[i..min_dim]);
-			if *self.get(index, i) == T::zero() {
-				panic!("Singular matrix! Cannot eliminate!");
-			}
+	// 	for i in 0..min_dim {
+	// 		let index = Matrix::argmax(&self.vals[i..min_dim]);
+	// 		if *self.get(index, i) == T::zero() {
+	// 			panic!("Singular matrix! Cannot eliminate!");
+	// 		}
 
-			out.swap_rows(index, i);
+	// 		out.swap_rows(index, i);
 
-			for j in (i+1)..out.rows {
-				let m = *out.get(j, i) / *out.get(i, i);
-				for k in (i+1)..out.rows {
-					out.set(*out.get(j, k) - *out.get(i, k) * m, j, k);
-				}
+	// 		for j in (i+1)..out.rows {
+	// 			let m = *out.get(j, i) / *out.get(i, i);
+	// 			for k in (i+1)..out.rows {
+	// 				out.set(*out.get(j, k) - *out.get(i, k) * m, j, k);
+	// 			}
 
-				out.set(T::zero(), j, i);
-			}
-		}
+	// 			out.set(T::zero(), j, i);
+	// 		}
+	// 	}
 
-		out
-	}
+	// 	out
+	// }
 
 	#[allow(dead_code)]
 	fn argmax(slice: &[T]) -> usize {
@@ -212,16 +213,6 @@ impl <T: Clone + Zero + One + Add<T, Output = T> + Sub<T, Output = T> + Mul<T, O
 		}
 
 		max_index
-	}
-
-	/// 1 2 3 4 5 6 7 8 9
-	/// 1 2 3 5 6 7 8 9 4
-	/// 1 2 3 6 7 8 9 4 5
-	/// 1 2 3 7 8 9 4 5 6
-	/// Insert first of first at end of second then
-	/// insert last of second at start of first
-	fn swap_rows(&mut self, first: usize, second: usize) {
-
 	}
 }
 

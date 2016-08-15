@@ -1,5 +1,6 @@
 use std::ops::{Add, Mul, Sub, Div};
-use std::num::{Zero, One};
+//use std::num::{Zero, One};
+use numbers::{Zero, One};
 use linsys::vector::Vector;
 use std::vec::Vec;
 
@@ -14,12 +15,14 @@ pub struct Dim<T> {
 
 impl<T> Dim<T> {
 	pub fn new(data: Vec<T>, lengths: Vec<usize>) -> Dim<T> {
-		if Dim::size_given_lengths(lengths) != data.len() {
+
+		let size = Dim::size_given_lengths(lengths);
+
+		if size != data.len() {
 			panic!("Your data does not match the size of the dim!");
 		}
 
 		let num_dimensions: usize = lengths.len();
-		let size = Dim::size_given_lengths(lengths);
 
 		Dim { vals: data, lengths: lengths.clone(), dims: num_dimensions, size: size }
 	}
@@ -125,13 +128,13 @@ impl<T> Dim<T> {
 			size = size / self.lengths[i];
 		}
 
-		indices[index]
+		indices
 	}
 
-	pub fn differential_size_given_lengths(starts: Vec<usize>, ends: Vec<usize>) -> usize {
+	pub fn differential_size_given_lengths(&self, starts: Vec<usize>, ends: Vec<usize>) -> usize {
 		let mut size: usize = 0;
 
-		for i in 0..lengths.len() {
+		for i in 0..starts.len() {
 			size = size * (ends[i] - starts[i]);
 		}
 
@@ -141,13 +144,15 @@ impl<T> Dim<T> {
 
 impl<T: PartialOrd + PartialEq> Dim<T> {
 	pub fn max(&self, min_index: Vec<usize>, max_index: Vec<usize>) -> T {
-		let mut min: T = self.get(min_index);
+		let mut min: T = *self.get(min_index);
 
-		let count: usize = differential_size_given_lengths(min_index, max_index);
+		let num: usize = self.differential_size_given_lengths(min_index, max_index);
 
-		for i in 0..count {
+		for i in 0..num {
 			
 		}
+
+		min
 	}
 }
 

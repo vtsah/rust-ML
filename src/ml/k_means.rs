@@ -4,6 +4,7 @@ use rand::{thread_rng, sample};
 use std::vec::Vec;
 use std::string::String;
 
+#[derive(Debug,PartialEq)]
 pub struct KMeans {
 	k: usize,
 	iterations: usize,
@@ -142,5 +143,62 @@ impl KMeans {
 
 	pub fn get_class(&self, mean: usize) -> String {
 		self.classes[mean].clone()
+	}
+}
+
+mod test {
+	use ml::k_means;
+	use linsys::matrix;
+	use linsys::vector;
+
+	#[test]
+	fn km_check_new() {
+		let km = k_means::KMeans::new(4, 50);
+		let check = k_means::KMeans { k: 4, iterations: 50, means: matrix::Matrix::empty(), classes: Vec::new() };
+		assert_eq!(km, check);
+	}
+
+	#[test]
+	#[should_panic]
+	fn km_panic_new() {
+		k_means::KMeans::new(1, 20);
+	}
+
+	#[test]
+	fn km_check_initialize() {
+		let mut km = k_means::KMeans::new(4, 50);
+		km.initialize(&matrix::Matrix::zeroes(5, 5));
+
+		print!("{:?}", km);
+	}
+
+	#[test]
+	fn km_check_update_means() {
+		let mut km = k_means::KMeans::new(4, 50);
+		let training = &matrix::Matrix::zeroes(5, 5);
+		km.initialize(training);
+		km.update_means(training);
+
+		print!("{:?}", km);
+	}
+
+	#[test]
+	fn km_check_train() {
+		let mut km = k_means::KMeans::new(4, 50);
+		let training = &matrix::Matrix::zeroes(5, 5);
+		km.initialize(training);
+		km.train(training);
+
+		print!("{:?}", km);
+	}
+
+	#[test]
+	fn km_check_test() {
+		let mut km = k_means::KMeans::new(4, 50);
+		let training = &matrix::Matrix::zeroes(5, 5);
+		km.initialize(training);
+		km.train(training);
+
+		print!("{:?}", km);
 	}
 }

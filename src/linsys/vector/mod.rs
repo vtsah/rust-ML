@@ -6,7 +6,8 @@
 //! by a scalar.
 
 use std::ops::{Add, Mul, Sub, Div};
-use std::num::Zero;
+//use std::num::Zero;
+use numbers::Zero;
 
 /// Vector struct
 /// 

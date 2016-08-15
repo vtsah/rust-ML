@@ -14,7 +14,7 @@ pub struct SVM {
 
 impl SVM {
 	pub fn train(dimensions: usize, reg_parameter: usize, tolerance: f64, max_passes: usize, data: Matrix<f64>, classes: Vec<String>) -> SVM {
-		let mut multipliers: Vec<f64> = new Vec::with_capacity(dimensions);
+		let mut multipliers: Vec<f64> = Vec::with_capacity(dimensions);
 		for _ in 0..dimensions {
 			multipliers.push(0f64);
 		}
@@ -27,7 +27,7 @@ impl SVM {
 
 			for i in 0..m {
 				let y: f64 = value(data.col_to_vector(i));
-				let E = classifier(data.col_to_vector(i)) - y);
+				let E = classifier(data.col_to_vector(i) - y);
 
 				if ((y * E < -tol) && (multipliers.get(i) < C)) || ((y * E > tol) && (multipliers.get(i) > 0)) {
 					let j: usize = 6; // random j != i
